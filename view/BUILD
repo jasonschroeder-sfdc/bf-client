@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -39,4 +39,10 @@ go_library(
         "@org_golang_x_net//html:go_default_library",
         "@remoteapis//build/bazel/remote/execution/v2:go_default_library",
     ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["queue_test.go"],
+    embed = [":go_default_library"],
 )
