@@ -46,7 +46,15 @@ type numValue struct {
   parent *numValue
 }
 
+// String returns a formatted string representation of the numValue.
+// It applies the format string with the value only if the format string contains a placeholder.
 func (nv numValue) String() string {
+  if nv.fmt == "" {
+    return ""
+  }
+  if !strings.Contains(nv.fmt, "%") {
+    return nv.fmt
+  }
   return fmt.Sprintf(nv.fmt, nv.value)
 }
 
