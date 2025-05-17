@@ -350,7 +350,7 @@ func treeDimensions(t *client.Tree) dims {
 func (v Queue) Render() []ui.Drawable {
   s := v.s
   p := widgets.NewParagraph()
-  p.Text = fmt.Sprintf("%v: %v\n%v: %v\n%v", v.a.RedisHost, v.a.LastRedisLatency, v.a.ReapiHost, v.a.LastReapiLatency, formatTime(s.last))
+  p.Text = fmt.Sprintf("%v: %v\n%v", v.a.ReapiHost, v.a.LastReapiLatency, formatTime(s.last))
   p.SetRect(0, 0, 80, 5)
 
   d := treeDimensions(v.stats)

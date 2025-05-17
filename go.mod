@@ -11,7 +11,6 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/mattn/go-runewidth v0.0.9
 	github.com/nsf/termbox-go v1.1.1
-	github.com/redis/go-redis/v9 v9.4.0
 	google.golang.org/genproto v0.0.0-20240730163845-b1a4ccb954bf
 	google.golang.org/genproto/googleapis/bytestream v0.0.0-20250115164207-1a7da9e5054f
 	google.golang.org/grpc v1.67.1

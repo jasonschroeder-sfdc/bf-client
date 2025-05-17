@@ -57,7 +57,7 @@ func NewOperationList(a *client.App, mode int, v View) *operationList {
       }
     }
     for _, name := range names {
-      queues = append(queues, client.NewQueue(context.Background(), a.Client, name))
+      queues = append(queues, client.NewQueue(context.Background(), name))
     }
   }
   return &operationList {
@@ -75,12 +75,12 @@ func NewOperationList(a *client.App, mode int, v View) *operationList {
 
 func (v operationList) fetchQueues(max int64, cb func(string) (*client.Operation, error)) []*client.Operation {
   var ops []*client.Operation
-  for _, queue := range v.queues {
-    ops = append(ops, queue.Slice(context.Background(), v.a.Client, 0, max, cb)...)
-    if int64(len(ops)) >= max {
-      break
-    }
-  }
+  // for _, queue := range v.queues {
+  //   ops = append(ops, queue.Slice(context.Background(), v.a.Client, 0, max, cb)...)
+  //   if int64(len(ops)) >= max {
+  //     break
+  //   }
+  // }
   return ops
 }
 
@@ -108,13 +108,13 @@ func (v operationList) fetchFiltered(filter string) []*client.Operation {
 
 func (v operationList) queuesLength() int64 {
   var sum int64 = 0
-  for _, queue := range v.queues {
-    l, err := queue.Length(context.Background(), v.a.Client)
-    if err != nil {
-      panic(err)
-    }
-    sum += int64(l)
-  }
+  // for _, queue := range v.queues {
+  //   l, err := queue.Length(context.Background(), v.a.Client)
+  //   if err != nil {
+  //     panic(err)
+  //   }
+  //   sum += int64(l)
+  // }
   return sum
 }
 
