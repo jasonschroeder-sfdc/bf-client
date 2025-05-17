@@ -23,7 +23,6 @@ go_library(
         "@com_github_golang_protobuf//proto:go_default_library",
         "@com_github_golang_protobuf//ptypes:go_default_library",
         "@com_github_mattn_go_runewidth//:go_default_library",
-        "@com_github_redis_go_redis_v9//:go_default_library",
         "@com_lukechampine_blake3//:go_default_library",
         "@org_golang_google_genproto//googleapis/longrunning:go_default_library",
         "@org_golang_google_genproto_googleapis_bytestream//:go_default_library",
