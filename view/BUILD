@@ -37,7 +37,7 @@ go_library(
 )
 
 go_test(
-    name = "queue_test",
+    name = "go_default_test",
     srcs = ["queue_test.go"],
     embed = [":go_default_library"],
 )
