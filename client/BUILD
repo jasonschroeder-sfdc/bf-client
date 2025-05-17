@@ -13,7 +13,6 @@ go_library(
         "operation.go",
         "queue.go",
         "tree.go",
-        "unified_redis.go",
     ],
     importpath = "github.com/werkt/bf-client/client",
     visibility = ["//visibility:public"],
