@@ -83,10 +83,20 @@ type workersSort struct {
   q *Queue
 }
 
+// String returns the current workers sort mode as a string.
+// It retrieves the sort mode string from the workersSorts slice.
 func (s workersSort) String() string {
   return workersSorts[s.q.workersSort]
 }
 
+// NewQueue creates a new Queue view.
+//
+// Parameters:
+//   - a: The client app that this queue view belongs to
+//   - selected: The initially selected row in the stats tree
+//
+// Returns:
+//   - A pointer to the newly created Queue
 func NewQueue(a *client.App, selected int) *Queue {
   _, h := ui.TerminalDimensions()
   meter := client.NewList()
@@ -122,6 +132,13 @@ func NewQueue(a *client.App, selected int) *Queue {
   return q
 }
 
+// Handle processes UI events and manages view navigation.
+//
+// Parameters:
+//   - e: The UI event to process
+//
+// Returns:
+//   - A View representing the current or new view after event processing
 func (v *Queue) Handle(e ui.Event) View {
   switch e.ID {
   case "<Escape>", "q", "<C-c>":
@@ -217,6 +234,11 @@ func (v *Queue) Handle(e ui.Event) View {
   return v
 }
 
+// updateProvisionNode updates a provision node with queue status information.
+//
+// Parameters:
+//   - node: The TreeNode to update
+//   - provision: The QueueStatus containing the provision information
 func updateProvisionNode(node *client.TreeNode, provision *bfpb.QueueStatus) {
   size := int64(0)
   n := len(provision.InternalSizes)
@@ -235,6 +257,10 @@ func updateProvisionNode(node *client.TreeNode, provision *bfpb.QueueStatus) {
   nodeNumValue.value = int(size)
 }
 
+// updateProvisionNodes updates queue nodes with provisions information.
+//
+// Parameters:
+//   - provisions: A slice of QueueStatus objects containing provision information
 func (v *Queue) updateProvisionNodes(provisions []*bfpb.QueueStatus) {
   if len(v.queueNode.Nodes) != len(provisions) {
     for _, provision := range provisions {
@@ -250,6 +276,8 @@ func (v *Queue) updateProvisionNodes(provisions []*bfpb.QueueStatus) {
   }
 }
 
+// Update refreshes the queue data by fetching the latest status from the server.
+// It updates worker profiles, queue statistics, and accumulates time-series data.
 func (v *Queue) Update() {
   s := &v.s
   c := bfpb.NewOperationQueueClient(v.a.Conn)
@@ -321,6 +349,14 @@ type dims struct {
   height int
 }
 
+// nodeDimensions calculates the display dimensions of a tree node.
+//
+// Parameters:
+//   - node: The node to calculate dimensions for
+//   - level: The nesting level of the node in the tree
+//
+// Returns:
+//   - A dims struct containing the width and height
 func nodeDimensions(node *client.TreeNode, level int) dims {
   d := dims{ len(node.Value.String()) + level * 2, 1 }
   if node.Expanded {
@@ -335,6 +371,13 @@ func nodeDimensions(node *client.TreeNode, level int) dims {
   return d
 }
 
+// treeDimensions calculates the display dimensions of an entire tree.
+//
+// Parameters:
+//   - t: The tree to calculate dimensions for
+//
+// Returns:
+//   - A dims struct containing the width and height of the tree
 func treeDimensions(t *client.Tree) dims {
   d := dims{ 0, 0 }
   t.Walk(func(n *client.TreeNode) int {
@@ -348,6 +391,10 @@ func treeDimensions(t *client.Tree) dims {
   return d
 }
 
+// Render generates the UI components to be displayed.
+//
+// Returns:
+//   - A slice of ui.Drawable objects to be rendered
 func (v Queue) Render() []ui.Drawable {
   s := v.s
   p := widgets.NewParagraph()
@@ -405,6 +452,13 @@ func (v Queue) Render() []ui.Drawable {
   return []ui.Drawable{ p, v.stats, info }
 }
 
+// fetchProfile retrieves the profile for a worker from the server.
+// It's run as a goroutine to fetch profiles in parallel.
+//
+// Parameters:
+//   - v: The Queue containing the profile data
+//   - worker: The name of the worker to fetch
+//   - wg: The WaitGroup for synchronizing goroutines
 func fetchProfile(v *Queue, worker string, wg *sync.WaitGroup) {
   defer wg.Done()
 
@@ -442,6 +496,10 @@ func fetchProfile(v *Queue, worker string, wg *sync.WaitGroup) {
 
 type by func(w1, w2 *string) bool
 
+// Sort sorts a slice of worker strings using the by function.
+//
+// Parameters:
+//   - workers: The slice of worker strings to sort
 func (by by) Sort(workers []string) {
   ws := &workerSorter{
     workers: workers,
@@ -475,11 +533,22 @@ type Worker struct {
   row string
 }
 
+// String returns the formatted worker row for display.
 func (w Worker) String() string {
   return w.row
 }
 
-// List needs work on draw, flip for only background, etc
+// renderWorkersInfo generates a UI list of workers with their execution information.
+//
+// Parameters:
+//   - s: The stats containing worker information
+//   - meter: The list UI component to populate
+//   - x: The x-coordinate for drawing
+//   - h: The height of the terminal
+//   - sort: The sort mode for workers (0=Executions, 1=Name)
+//
+// Returns:
+//   - A ui.Drawable representing the workers list
 func renderWorkersInfo(s *stats, meter *client.List, x int, h int, sort int) ui.Drawable {
   plen := len(s.workers)
 
@@ -554,11 +623,28 @@ func renderWorkersInfo(s *stats, meter *client.List, x int, h int, sort int) ui.
   return meter
 }
 
+// countBar creates a formatted string showing used/total slots.
+//
+// Parameters:
+//   - used: Number of used slots
+//   - slots: Total number of slots
+//
+// Returns:
+//   - A formatted string representation
 func countBar(used int, slots int) string {
   // # used/slots #
   return fmt.Sprintf("# %d/%d #", used, slots)
 }
 
+// renderWorkerRow creates a Worker item with formatted display information.
+//
+// Parameters:
+//   - r: The profile result for the worker
+//   - w: The worker name
+//   - wl: The max width of worker names (for padding)
+//
+// Returns:
+//   - A Worker object with formatted display information
 func renderWorkerRow(r *profileResult, w string, wl int) Worker {
   var profile *bfpb.WorkerProfileMessage
   if r == nil {
@@ -625,6 +711,13 @@ func renderWorkerRow(r *profileResult, w string, wl int) Worker {
   }
 }
 
+// formatTime formats a time.Time into a human-readable string.
+//
+// Parameters:
+//   - t: The time to format
+//
+// Returns:
+//   - A formatted string representation of the time
 func formatTime(t time.Time) string {
   return t.Format("Mon Jan 2 15:04:05 -0700 MST 2006")
 }
