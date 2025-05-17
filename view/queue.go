@@ -75,6 +75,14 @@ type Queue struct {
   workersSort int
 }
 
+// statNode creates a new TreeNode containing the provided numValue.
+// This helper function is used to create nodes for the stats tree.
+//
+// Parameters:
+//   - nv: The numValue to be stored in the node
+//
+// Returns:
+//   - A pointer to a new TreeNode containing the numValue
 func statNode(nv *numValue) *client.TreeNode {
   return &client.TreeNode{ Value: nv, }
 }
