@@ -242,7 +242,7 @@
   "moduleExtensions": {
     "//:extensions.bzl%build_deps": {
       "general": {
-        "bzlTransitiveDigest": "4McQAVUuB28g6/K1krYOhheuC9nBITj+74GIhJvArC0=",
+        "bzlTransitiveDigest": "pPDLOWa/tkvNRis1TiC67n7e/qh9K34DwDgEecLQHhM=",
         "usagesDigest": "N1be+WNYxoeG1JN4CaIE1KMt+fq1c0PjhQ9M3tOJvU0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

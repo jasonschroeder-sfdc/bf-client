@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	ui "github.com/gizak/termui/v3"
@@ -68,18 +67,14 @@ func main() {
 	tm.SetInputMode(tm.InputEsc)
 	defer ui.Close()
 
-	redisHost, reapiHost := os.Args[1], os.Args[2]
+	reapiHost := os.Args[1]
 
 	var ca string
-	if len(os.Args) > 3 {
-		ca = os.Args[3]
+	if len(os.Args) > 2 {
+		ca = os.Args[2]
 	}
 
-	if !strings.Contains(redisHost, ":") {
-		redisHost += ":6379"
-	}
-
-	a := client.NewApp(redisHost, reapiHost, ca)
+	a := client.NewApp(reapiHost, ca)
 	var c component = &baseComponent{
 		a: a,
 		v: view.NewQueue(a, 3),

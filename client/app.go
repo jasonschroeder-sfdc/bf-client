@@ -4,26 +4,25 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"os"
+	"strings"
+	"sync"
+	"time"
+
 	reapi "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
 	"google.golang.org/genproto/googleapis/longrunning"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"os"
-	"strings"
-	"sync"
-	"time"
 )
 
 type App struct {
 	Instance         string
-	RedisHost        string
 	ReapiHost        string
 	LastRedisLatency time.Duration
 	LastReapiLatency time.Duration
 	CA               string
 	Done             bool
-	Client           *UnifiedRedis
 	Conn             *grpc.ClientConn
 	workerConns      map[string]*grpc.ClientConn
 	Ops              map[string]*longrunning.Operation
@@ -37,10 +36,9 @@ type App struct {
 	UpdateCountdown int
 }
 
-func NewApp(redisHost string, reapiHost string, ca string) *App {
+func NewApp(reapiHost string, ca string) *App {
 	return &App{
 		Instance:    "shard",
-		RedisHost:   redisHost,
 		ReapiHost:   reapiHost,
 		CA:          ca,
 		Done:        false,
@@ -48,7 +46,6 @@ func NewApp(redisHost string, reapiHost string, ca string) *App {
 		Metadatas:   make(map[string]*reapi.RequestMetadata),
 		Invocations: make(map[string][]string),
 		workerConns: make(map[string]*grpc.ClientConn),
-		Client:      &UnifiedRedis{},
 		Mutex:       &sync.Mutex{},
 		FrameLimit:  60,
 	}
@@ -62,7 +59,6 @@ func (a *App) GetWorkerConn(worker string, ca string) *grpc.ClientConn {
 }
 
 func (a *App) Connect() {
-	a.Client.connect(a.RedisHost)
 	a.Conn = connect(a.ReapiHost, a.CA)
 }
 
