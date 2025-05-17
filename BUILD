@@ -1,6 +1,7 @@
 load("@gazelle//:def.bzl", "gazelle")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
+# gazelle:prefix github.com/werkt/bf-client
 gazelle(name = "gazelle")
 
 go_library(
