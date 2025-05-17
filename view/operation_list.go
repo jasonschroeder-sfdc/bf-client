@@ -1,17 +1,17 @@
 package view
 
 import (
-  "context"
-  "fmt"
-  "sync"
-  "time"
+	"context"
+	"fmt"
+	"sync"
+	"time"
 
-  bfpb "github.com/buildfarm/buildfarm/build/buildfarm/v1test"
-  ui "github.com/gizak/termui/v3"
-  "github.com/hashicorp/golang-lru/v2"
-  "github.com/werkt/bf-client/client"
-  "github.com/golang/protobuf/ptypes"
-  "google.golang.org/genproto/googleapis/longrunning"
+	bfpb "github.com/buildfarm/buildfarm/build/buildfarm/v1test"
+	ui "github.com/gizak/termui/v3"
+	"github.com/golang/protobuf/ptypes"
+	lru "github.com/hashicorp/golang-lru/v2"
+	"github.com/werkt/bf-client/client"
+	"google.golang.org/genproto/googleapis/longrunning"
 )
 
 type operation struct {

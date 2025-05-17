@@ -1,18 +1,19 @@
 package client
 
 import (
-  "crypto/x509"
-  "crypto/tls"
-  "fmt"
-  "os"
-  "strings"
-  "sync"
-  "time"
-  reapi "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
-  "google.golang.org/genproto/googleapis/longrunning"
-  "google.golang.org/grpc"
-  "google.golang.org/grpc/credentials"
-  "google.golang.org/grpc/credentials/insecure"
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"os"
+	"strings"
+	"sync"
+	"time"
+
+	reapi "github.com/bazelbuild/remote-apis/build/bazel/remote/execution/v2"
+	"google.golang.org/genproto/googleapis/longrunning"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type App struct {

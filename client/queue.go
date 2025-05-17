@@ -1,12 +1,12 @@
 package client
 
 import (
-  "context"
-  "fmt"
-  "regexp"
-  "strings"
-  bfpb "github.com/buildfarm/buildfarm/build/buildfarm/v1test"
-  "github.com/golang/protobuf/jsonpb"
+	"context"
+	"fmt"
+	"strings"
+
+	bfpb "github.com/buildfarm/buildfarm/build/buildfarm/v1test"
+	"github.com/golang/protobuf/jsonpb"
 )
 
 type Queue struct {
