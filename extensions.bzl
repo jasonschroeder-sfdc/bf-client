@@ -1,3 +1,7 @@
+"""
+bf-client dependencies that can be imported
+"""
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def _buildfarm_extension_impl(_ctx):
