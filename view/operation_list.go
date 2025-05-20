@@ -223,7 +223,7 @@ func (v operationList) modeTitle() string {
 }
 
 func (v operationList) Render() []ui.Drawable {
-  fields := [...]string{"name", "target", "build", "mnemonic"}
+  fields := [...]string{"name", "target", "mnemonic", "build"}
   v.list.Title = fmt.Sprintf("%s Operations (%s) %d", v.modeTitle(), fields[v.field], len(v.ops))
   rows := make([]fmt.Stringer, len(v.ops))
   for i := 0; i < len(v.ops); i++ {
