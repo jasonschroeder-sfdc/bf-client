@@ -249,7 +249,8 @@ func (v operationList) Render() []ui.Drawable {
   byExec(fence).Sort(v.list.Rows)
   v.list.SelectedRowStyle = ui.NewStyle(ui.ColorBlack, ui.ColorWhite)
   v.list.WrapText = false
-  v.list.SetRect(0, 0, 80, 30)
+  w, h := ui.TerminalDimensions()
+  v.list.SetRect(0, 0, w, h)
 
   return []ui.Drawable { v.list }
 }
