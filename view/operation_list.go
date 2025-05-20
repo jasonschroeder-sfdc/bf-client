@@ -567,7 +567,8 @@ func (v operationList) Render() []ui.Drawable {
 	v.list.Rows = rows
 	v.list.SelectedRowStyle = ui.NewStyle(ui.ColorBlack, ui.ColorWhite)
 	v.list.WrapText = false
-	v.list.SetRect(0, 0, 160, 30)
+	w, h := ui.TerminalDimensions()
+	v.list.SetRect(0, 0, w, h)
 
 	content := []ui.Drawable{v.list}
 	debug := client.NewParagraph()
