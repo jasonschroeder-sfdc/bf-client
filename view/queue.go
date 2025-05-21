@@ -472,7 +472,7 @@ func fetchProfile(v *Queue, worker string, wg *sync.WaitGroup) {
 
   workerProfile := bfpb.NewWorkerProfileClient(v.a.Conn)
 
-  clientDeadline := time.Now().Add(time.Millisecond * 30)
+	clientDeadline := time.Now().Add(time.Millisecond * 500)
   ctx, _ := context.WithDeadline(context.Background(), clientDeadline)
   profile, err := workerProfile.GetWorkerProfile(ctx, &bfpb.WorkerProfileRequest {WorkerName: worker})
   if err == nil {
