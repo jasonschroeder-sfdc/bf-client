@@ -405,18 +405,18 @@ func treeDimensions(t *client.Tree) dims {
 //   - A slice of ui.Drawable objects to be rendered
 func (v Queue) Render() []ui.Drawable {
   s := v.s
-  p := widgets.NewParagraph()
-  p.Text = fmt.Sprintf("%v: %v\n%v", v.a.ReapiHost, v.a.LastReapiLatency, formatTime(s.last))
-  p.SetRect(0, 0, 80, 5)
+	topParagraph := widgets.NewParagraph()
+	topParagraph.Text = fmt.Sprintf("%v: %v\n%v", v.a.ReapiHost, v.a.LastReapiLatency, formatTime(s.last))
+	topParagraph.SetRect(0, 0, 80, 5)
 
-  d := treeDimensions(v.stats)
-  d.width += 4
-  d.height += 6
-  v.stats.SetRect(0, 4, d.width, d.height)
+	treeDims := treeDimensions(v.stats)
+	treeDims.width += 4
+	treeDims.height += 6
+	v.stats.SetRect(0, 4, treeDims.width, treeDims.height)
 
   var info ui.Drawable
   if v.stats.SelectedRow == 0 {
-    info = renderWorkersInfo(&s, v.meter, d.width, v.h, v.workersSort)
+		info = renderWorkersInfo(&s, v.meter, treeDims.width, v.h, v.workersSort)
   } else {
     plot := widgets.NewPlot()
     plot.Data = make([][]float64, 1)
@@ -449,7 +449,7 @@ func (v Queue) Render() []ui.Drawable {
     for ; n < 60; n++ {
       plot.Data[0][59 - n] = float64(0)
     }
-    plot.SetRect(d.width, 4, d.width + 71, 30)
+		plot.SetRect(treeDims.width, 4, treeDims.width+71, 30)
     plot.AxesColor = ui.ColorWhite
     plot.Marker = widgets.MarkerBraille
     plot.PlotType = widgets.ScatterPlot
@@ -457,7 +457,7 @@ func (v Queue) Render() []ui.Drawable {
     info = plot
   }
 
-  return []ui.Drawable{ p, v.stats, info }
+	return []ui.Drawable{topParagraph, v.stats, info}
 }
 
 // fetchProfile retrieves the profile for a worker from the server.
@@ -549,7 +549,7 @@ func (w Worker) String() string {
 // renderWorkersInfo generates a UI list of workers with their execution information.
 //
 // Parameters:
-//   - s: The stats containing worker information
+//   - workerStats: The stats containing worker information
 //   - meter: The list UI component to populate
 //   - x: The x-coordinate for drawing
 //   - h: The height of the terminal
@@ -557,25 +557,25 @@ func (w Worker) String() string {
 //
 // Returns:
 //   - A ui.Drawable representing the workers list
-func renderWorkersInfo(s *stats, meter *client.List, x int, h int, sort int) ui.Drawable {
-  plen := len(s.workers)
+func renderWorkersInfo(workerStats *stats, meter *client.List, x int, h int, sort int) ui.Drawable {
+	plen := len(workerStats.workers)
 
   meter.SelectedRowStyle = ui.NewStyle(ui.ColorBlack, ui.ColorWhite)
-  meter.SetRect(x, 4, x + 161, h - 6)
-  meter.Title = "Workers";
+	meter.SetRect(x, 4, x+161, h-6)
+	meter.Title = "Workers"
 
-  wl := 0
-  for _, worker := range s.workers {
-    twl := len(worker)
-    if twl > wl {
-      wl = twl
+	// Find the length of the longest worker name
+	maxWorkerLength := 0
+	for _, worker := range workerStats.workers {
+		if len(worker) > maxWorkerLength {
+			maxWorkerLength = len(worker)
     }
   }
 
   // bleh
 
   exec_used := func(worker *string) int {
-    profileResult := s.profiles[*worker]
+    profileResult := workerStats.profiles[*worker]
     if profileResult == nil {
       return -1
     }
@@ -588,7 +588,7 @@ func renderWorkersInfo(s *stats, meter *client.List, x int, h int, sort int) ui.
     return 0;
   }
   exec_avail := func(worker *string) int {
-    profileResult := s.profiles[*worker]
+    profileResult := workerStats.profiles[*worker]
     if profileResult == nil {
       return -1
     }
@@ -613,17 +613,17 @@ func renderWorkersInfo(s *stats, meter *client.List, x int, h int, sort int) ui.
     return *w1 < *w2
   }
   if sort == 0 {
-    by(exec).Sort(s.workers)
+		by(exec).Sort(workerStats.workers)
   } else {
-    by(name).Sort(s.workers)
+		by(name).Sort(workerStats.workers)
   }
 
   // end sorting
 
   n := 0
   rows := make([]fmt.Stringer, plen)
-  for _, w := range s.workers {
-    rows[n] = renderWorkerRow(s.profiles[w], w, wl)
+	for _, w := range workerStats.workers {
+		rows[n] = renderWorkerRow(workerStats.profiles[w], w, maxWorkerLength)
     n++
   }
   meter.Rows = rows
