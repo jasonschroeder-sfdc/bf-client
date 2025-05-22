@@ -100,7 +100,7 @@ func (v *operationView) renderOperation(op *widgets.Paragraph) {
   em := &reapi.ExecuteOperationMetadata{}
   qm := &bfpb.QueuedOperationMetadata{}
   df := reapi.DigestFunction_UNKNOWN
-  if ptypes.Is(m, em) {
+  if m.MessageIs(em) {
     if err := ptypes.UnmarshalAny(m, em); err != nil {
       op.Text = err.Error()
       v.selectableFields = 0
@@ -124,7 +124,7 @@ func (v *operationView) renderOperation(op *widgets.Paragraph) {
       }
       v.selectionActions[actionIndex] = func(ov *operationView) View { return NewAction(v.a, client.ToDigest(*em.ActionDigest, df), ov) }
     }
-  } else if ptypes.Is(m, qm) {
+  } else if m.MessageIs(qm) {
     if err := ptypes.UnmarshalAny(m, qm); err != nil {
       op.Text = err.Error()
       v.selectableFields = 0
@@ -152,7 +152,7 @@ func (v *operationView) renderOperation(op *widgets.Paragraph) {
     op.Text += "error: " + proto.MarshalTextString(r.Error)
   case *longrunning.Operation_Response:
     er := &reapi.ExecuteResponse{}
-    if ptypes.Is(r.Response, er) {
+    if r.Response.MessageIs(er) {
       if err := ptypes.UnmarshalAny(r.Response, er); err != nil {
         op.Text += err.Error()
         v.selectableFields = 0
