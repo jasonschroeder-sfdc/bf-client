@@ -31,6 +31,10 @@ type App struct {
   Invocations map[string][]string
   Fetches uint
   Mutex *sync.Mutex
+
+  FrameLimit int
+  SkipFrames int
+  UpdateCountdown int
 }
 
 func NewApp(redisHost string, reapiHost string, ca string) *App {
@@ -46,6 +50,7 @@ func NewApp(redisHost string, reapiHost string, ca string) *App {
     workerConns: make(map[string]*grpc.ClientConn),
     Client: &UnifiedRedis{},
     Mutex: &sync.Mutex{},
+    FrameLimit: 60,
   }
 }
 
@@ -64,7 +69,10 @@ func (a *App) Connect() {
 func connect(host string, ca string) *grpc.ClientConn {
   var opts []grpc.DialOption
   if strings.HasPrefix(host, "grpcs://") {
-    host = host[8:] + ":443"
+    host = host[8:]
+    if !strings.Contains(host, ":") {
+      host = host + ":443"
+    }
     creds, err := loadTLSCredentials(ca)
     if err != nil {
       panic(err)
@@ -81,6 +89,9 @@ func connect(host string, ca string) *grpc.ClientConn {
 }
 
 func loadTLSCredentials(ca string) (credentials.TransportCredentials, error) {
+  if ca == "" {
+    return credentials.NewTLS(&tls.Config{}), nil
+  }
   // Load certificate of the CA who signed server's certificate
   pemServerCA, err := os.ReadFile(ca)
   if err != nil {
