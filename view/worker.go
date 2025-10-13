@@ -156,6 +156,9 @@ func (v *worker) togglePause() {
 		},
 	})
 	if err != nil {
+		if status.Code(err) == codes.Unimplemented {
+			return
+		}
 		panic(err)
 	}
 	for _, change := range r.Changes {
@@ -190,6 +193,9 @@ func (v *worker) changeWidth(width int32) {
 		},
 	})
 	if err != nil {
+		if status.Code(err) == codes.Unimplemented {
+			return
+		}
 		panic(err)
 	}
 	for _, change := range r.Changes {
@@ -561,6 +567,9 @@ func (v *worker) Update() {
 	c := bfpb.NewWorkerControlClient(conn)
 	r, err := c.PipelineChange(context.Background(), &bfpb.WorkerPipelineChangeRequest{})
 	if err != nil {
+		if status.Code(err) == codes.Unimplemented {
+			return
+		}
 		panic(err)
 	}
 	for _, change := range r.Changes {
