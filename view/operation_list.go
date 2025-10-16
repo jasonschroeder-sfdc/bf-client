@@ -419,7 +419,7 @@ func opStringer(name string, op *operation, field func() int) *stageEx {
 	}
 	if op != nil {
 		row.done = op.done
-		if op.done {
+		if op.done && op.workerCompleted != nil {
 			row.final = *op.workerCompleted
 		}
 		if op.workerStart != nil {
