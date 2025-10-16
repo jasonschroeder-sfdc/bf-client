@@ -4,19 +4,19 @@ import (
 	"container/list"
 	"context"
 	"fmt"
-	bfpb "github.com/buildfarm/buildfarm/build/buildfarm/v1test"
-	ui "github.com/gizak/termui/v3"
-	"github.com/gizak/termui/v3/widgets"
-	"github.com/werkt/bf-client/client"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"maps"
 	"slices"
 	"sort"
 	"strings"
 	"sync"
 	"time"
+
+	bfpb "github.com/buildfarm/buildfarm/build/buildfarm/v1test"
+	ui "github.com/gizak/termui/v3"
+	"github.com/gizak/termui/v3/widgets"
+	"github.com/werkt/bf-client/client"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var workersSorts = []string{"Executions", "Name"}
@@ -305,12 +305,7 @@ func (v *Queue) Update() {
 	var st *bfpb.BackplaneStatus
 	if v.stats.SelectedRow == 0 {
 		if s.workers != nil {
-			var wg sync.WaitGroup
-			for _, worker := range s.workers {
-				wg.Add(1)
-				go fetchProfile(v, worker, v.a.GetWorkerConn(worker, v.a.CA), &wg)
-			}
-			wg.Wait()
+			fetchBatchProfiles(v, s.workers)
 		}
 	}
 	start := time.Now()
@@ -472,45 +467,102 @@ func (v Queue) Render() []ui.Drawable {
 	return []ui.Drawable{p, v.stats, info}
 }
 
-// fetchProfile retrieves the profile for a worker from the server.
-// It's run as a goroutine to fetch profiles in parallel.
+// fetchBatchProfiles retrieves profiles for all workers using the batch API.
+// This replaces the individual fetchProfile function for better efficiency.
 //
 // Parameters:
 //   - v: The Queue containing the profile data
-//   - worker: The name of the worker to fetch
-//   - conn: grpc connection to that worker
-//   - wg: The WaitGroup for synchronizing goroutines
-func fetchProfile(v *Queue, worker string, conn *grpc.ClientConn, wg *sync.WaitGroup) {
-	defer wg.Done()
+//   - workers: The list of worker names to fetch profiles for
+func fetchBatchProfiles(v *Queue, workers []string) {
+	if len(workers) == 0 {
+		return
+	}
 
+	// Use the first worker's connection to make the batch request
+	// In practice, this should probably use the main server connection
+	conn := v.a.GetWorkerConn(workers[0], v.a.CA)
 	workerProfile := bfpb.NewWorkerProfileClient(conn)
-	clientDeadline := time.Now().Add(time.Millisecond * 30)
+
+	clientDeadline := time.Now().Add(time.Millisecond * 500)
 	ctx, _ := context.WithDeadline(context.Background(), clientDeadline)
-	profile, err := workerProfile.GetWorkerProfile(ctx, &bfpb.WorkerProfileRequest{})
-	if err == nil {
-		v.s.mutex.Lock()
-		v.s.profiles[worker] = &profileResult{name: worker, profile: profile, stale: 0, message: ""}
-		v.s.mutex.Unlock()
-	} else {
-		st, ok := status.FromError(err)
-		v.s.mutex.Lock()
-		if !ok || st.Code() != codes.DeadlineExceeded {
+
+	request := &bfpb.BatchWorkerProfilesRequest{
+		InstanceName: "shard",
+		WorkerNames:  workers,
+	}
+
+	response, err := workerProfile.BatchWorkerProfiles(ctx, request)
+
+	v.s.mutex.Lock()
+	defer v.s.mutex.Unlock()
+
+	if err != nil {
+		// If batch request fails, mark all workers as stale
+		st, _ := status.FromError(err)
+		for _, worker := range workers {
 			result := v.s.profiles[worker]
 			if result == nil {
-				v.s.profiles[worker] = &profileResult{name: worker, profile: &bfpb.WorkerProfileMessage{}, stale: 1, message: st.String()}
+				v.s.profiles[worker] = &profileResult{
+					name:    worker,
+					profile: &bfpb.WorkerProfileMessage{},
+					stale:   1,
+					message: st.String(),
+				}
 			} else {
 				result.stale++
 				result.message = st.String()
 			}
+		}
+		return
+	}
+
+	// Process successful batch response
+	responseMap := make(map[string]*bfpb.BatchWorkerProfilesResponse_Response)
+	for _, resp := range response.Responses {
+		responseMap[resp.WorkerName] = resp
+	}
+
+	// Update profiles for all requested workers
+	for _, worker := range workers {
+		if resp, exists := responseMap[worker]; exists {
+			if resp.Status == nil || resp.Status.Code == 0 {
+				// Success
+				v.s.profiles[worker] = &profileResult{
+					name:    worker,
+					profile: resp.Profile,
+					stale:   0,
+					message: "",
+				}
+			} else {
+				// Worker-specific error
+				result := v.s.profiles[worker]
+				if result == nil {
+					v.s.profiles[worker] = &profileResult{
+						name:    worker,
+						profile: &bfpb.WorkerProfileMessage{},
+						stale:   1,
+						message: resp.Status.Message,
+					}
+				} else {
+					result.stale++
+					result.message = resp.Status.Message
+				}
+			}
 		} else {
+			// Worker not in response, mark as stale
 			result := v.s.profiles[worker]
 			if result == nil {
-				v.s.profiles[worker] = &profileResult{name: worker, profile: &bfpb.WorkerProfileMessage{}, stale: 1, message: ""}
+				v.s.profiles[worker] = &profileResult{
+					name:    worker,
+					profile: &bfpb.WorkerProfileMessage{},
+					stale:   1,
+					message: "not in batch response",
+				}
 			} else {
 				result.stale++
+				result.message = "not in batch response"
 			}
 		}
-		v.s.mutex.Unlock()
 	}
 }
 
