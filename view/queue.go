@@ -480,8 +480,7 @@ func fetchBatchProfiles(v *Queue, workers []string) {
 
 	// Use the first worker's connection to make the batch request
 	// In practice, this should probably use the main server connection
-	conn := v.a.GetWorkerConn(workers[0], v.a.CA)
-	workerProfile := bfpb.NewWorkerProfileClient(conn)
+	workerProfile := bfpb.NewWorkerProfileClient(v.a.Conn)
 
 	clientDeadline := time.Now().Add(time.Millisecond * 500)
 	ctx, _ := context.WithDeadline(context.Background(), clientDeadline)

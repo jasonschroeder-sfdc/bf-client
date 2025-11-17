@@ -143,8 +143,7 @@ func (v *worker) selectedStage() (string, bool) {
 }
 
 func (v *worker) togglePause() {
-	conn := v.a.GetWorkerConn(v.w, v.a.CA)
-	c := bfpb.NewWorkerControlClient(conn)
+	c := bfpb.NewWorkerControlClient(v.a.Conn)
 	stage, paused := v.selectedStage()
 	paused = !paused
 	r, err := c.PipelineChange(context.Background(), &bfpb.WorkerPipelineChangeRequest{
@@ -180,8 +179,7 @@ func (v *worker) decreaseWidth() {
 }
 
 func (v *worker) changeWidth(width int32) {
-	conn := v.a.GetWorkerConn(v.w, v.a.CA)
-	c := bfpb.NewWorkerControlClient(conn)
+	c := bfpb.NewWorkerControlClient(v.a.Conn)
 	stage, paused := v.selectedStage()
 	r, err := c.PipelineChange(context.Background(), &bfpb.WorkerPipelineChangeRequest{
 		Changes: []*bfpb.PipelineChange{
@@ -566,8 +564,7 @@ func pausedStyle(p bool) ui.Style {
 }
 
 func (v *worker) Update() {
-	conn := v.a.GetWorkerConn(v.w, v.a.CA)
-	workerProfile := bfpb.NewWorkerProfileClient(conn)
+	workerProfile := bfpb.NewWorkerProfileClient(v.a.Conn)
 	profile, err := workerProfile.GetWorkerProfile(context.Background(), &bfpb.WorkerProfileRequest{
 		InstanceName: "shard",
 		WorkerName:   v.w,
@@ -575,7 +572,7 @@ func (v *worker) Update() {
 	if err == nil {
 		v.profile = profile
 	}
-	c := bfpb.NewWorkerControlClient(conn)
+	c := bfpb.NewWorkerControlClient(v.a.Conn)
 	r, err := c.PipelineChange(context.Background(), &bfpb.WorkerPipelineChangeRequest{
 		InstanceName: "shard",
 		WorkerName:   v.w,
