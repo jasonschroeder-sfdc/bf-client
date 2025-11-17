@@ -276,6 +276,26 @@ func (v *operationList) selectedName() string {
 	return v.list.Rows[v.list.SelectedRow].(*stageEx).name
 }
 
+func (v *operationList) cancelOperation() {
+	if v.list.SelectedRow < 0 || v.list.SelectedRow >= len(v.list.Rows) {
+		return
+	}
+	name := v.selectedName()
+	if len(name) != 0 {
+		ops := longrunning.NewOperationsClient(v.a.Conn)
+		_, err := ops.CancelOperation(context.Background(), &longrunning.CancelOperationRequest{
+			Name: name,
+		})
+		if err != nil {
+			st, ok := status.FromError(err)
+			if !ok || st.Code() != codes.Unknown {
+				panic(err)
+			}
+			// buildfarm spits out an unknown for already-done
+		}
+	}
+}
+
 func selectField(field int, name string) map[string]string {
 	key := []string{"id", "target", "mnemonic", "build"}[field]
 	return map[string]string{key: name}
@@ -286,6 +306,8 @@ func (v *operationList) Handle(e ui.Event) View {
 	case "<Escape>", "q", "<C-c>":
 		ui.Clear()
 		return v.v
+	case "X":
+		v.cancelOperation()
 	case "D":
 		v.debug = !v.debug
 	case "G":
