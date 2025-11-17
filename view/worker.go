@@ -147,6 +147,8 @@ func (v *worker) togglePause() {
 	stage, paused := v.selectedStage()
 	paused = !paused
 	r, err := c.PipelineChange(context.Background(), &bfpb.WorkerPipelineChangeRequest{
+		InstanceName: "shard",
+		WorkerName:   v.w,
 		Changes: []*bfpb.PipelineChange{
 			&bfpb.PipelineChange{
 				Stage:  stage,
@@ -182,6 +184,8 @@ func (v *worker) changeWidth(width int32) {
 	c := bfpb.NewWorkerControlClient(v.a.Conn)
 	stage, paused := v.selectedStage()
 	r, err := c.PipelineChange(context.Background(), &bfpb.WorkerPipelineChangeRequest{
+		InstanceName: "shard",
+		WorkerName:   v.w,
 		Changes: []*bfpb.PipelineChange{
 			&bfpb.PipelineChange{
 				Stage:  stage,
