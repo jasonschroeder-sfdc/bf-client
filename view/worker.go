@@ -217,9 +217,13 @@ func (v *worker) Handle(e ui.Event) View {
 	case "<Enter>":
 		return NewDocument(v.a, v.currentOperationName(), v)
 	case "j", "<Down>":
-		v.selectedList().ScrollDown()
+		if list := v.selectedList(); list != nil {
+			list.ScrollDown()
+		}
 	case "k", "<Up>":
-		v.selectedList().ScrollUp()
+		if list := v.selectedList(); list != nil {
+			list.ScrollUp()
+		}
 	case "l", "<Right>":
 		v.field++
 		v.field %= 4
