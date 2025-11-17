@@ -24,7 +24,7 @@ import (
 type worker struct {
 	a       *client.App
 	v       View
-	w       string
+	w       string // Worker's name (usually an address - NOT the label!)
 	profile *bfpb.WorkerProfileMessage
 	title   *widgets.Paragraph
 	// TODO make into array with better types
@@ -48,7 +48,7 @@ func NewStageList() *client.List {
 	return list
 }
 
-func NewWorker(a *client.App, w string, v View) *worker {
+func NewWorker(a *client.App, workerName string, v View) *worker {
 	title := widgets.NewParagraph()
 	match := NewStageList()
 	inputFetch := NewStageList()
@@ -58,7 +58,7 @@ func NewWorker(a *client.App, w string, v View) *worker {
 	return &worker{
 		a:            a,
 		v:            v,
-		w:            w,
+		w:            workerName,
 		title:        title,
 		match:        match,
 		inputFetch:   inputFetch,
