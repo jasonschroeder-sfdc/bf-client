@@ -160,11 +160,11 @@ func (v *worker) togglePause() {
 		if status.Code(err) == codes.Unimplemented {
 			return
 		}
-		panic(err)
+		panic(fmt.Sprintf("togglePause error for worker %s, stage %s, paused=%v: %v (code: %v)", v.w, stage, paused, err, status.Code(err)))
 	}
 	for _, change := range r.Changes {
 		if change.Stage == stage && change.Paused != paused {
-			panic("pipeline close not effective")
+			panic(fmt.Sprintf("pipeline pause toggle not effective for worker %s, stage %s: requested paused=%v, got paused=%v", v.w, stage, paused, change.Paused))
 		}
 	}
 }
@@ -198,11 +198,11 @@ func (v *worker) changeWidth(width int32) {
 		if status.Code(err) == codes.Unimplemented {
 			return
 		}
-		panic(err)
+		panic(fmt.Sprintf("changeWidth error for worker %s, stage %s, width %d: %v (code: %v)", v.w, stage, width, err, status.Code(err)))
 	}
 	for _, change := range r.Changes {
 		if change.Stage == stage && change.Paused != paused {
-			panic("pipeline width change not effective")
+			panic(fmt.Sprintf("pipeline width change not effective for worker %s, stage %s: requested paused=%v, got paused=%v, width=%d", v.w, stage, paused, change.Paused, width))
 		}
 	}
 }
